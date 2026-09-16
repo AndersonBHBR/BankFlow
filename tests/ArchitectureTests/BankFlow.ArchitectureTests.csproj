@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Contracts/BankFlow.Contracts/BankFlow.Contracts.csproj" />
+    <ProjectReference Include="../../src/Transfers/Transfers.Domain/Transfers.Domain.csproj" />
+    <ProjectReference Include="../../src/Transfers/Transfers.Application/Transfers.Application.csproj" />
+    <ProjectReference Include="../../src/Transfers/Transfers.Infrastructure/Transfers.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Accounts/Accounts.Domain/Accounts.Domain.csproj" />
+    <ProjectReference Include="../../src/Accounts/Accounts.Application/Accounts.Application.csproj" />
+    <ProjectReference Include="../../src/Accounts/Accounts.Infrastructure/Accounts.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

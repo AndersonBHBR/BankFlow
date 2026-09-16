@@ -1,0 +1,14 @@
+**/bin
+**/obj
+**/node_modules
+**/.next
+**/.env.local
+.git
+.github
+.env
+.vs
+.vscode
+TestResults
+coverage
+artifacts
+npm-debug.log*

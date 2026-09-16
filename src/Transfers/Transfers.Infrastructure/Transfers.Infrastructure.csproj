@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../Contracts/BankFlow.Contracts/BankFlow.Contracts.csproj" />
+    <ProjectReference Include="../Transfers.Application/Transfers.Application.csproj" />
+    <ProjectReference Include="../Transfers.Domain/Transfers.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="RabbitMQ.Client" />
+  </ItemGroup>
+</Project>

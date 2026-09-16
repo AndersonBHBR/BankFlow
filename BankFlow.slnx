@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/BuildingBlocks/BankFlow.ServiceDefaults/BankFlow.ServiceDefaults.csproj" />
+  <Project Path="src/Contracts/BankFlow.Contracts/BankFlow.Contracts.csproj" />
+  <Project Path="src/Gateway/BankFlow.Gateway/BankFlow.Gateway.csproj" />
+  <Project Path="src/Identity/BankFlow.Identity.Api/BankFlow.Identity.Api.csproj" />
+  <Project Path="src/Transfers/Transfers.Domain/Transfers.Domain.csproj" />
+  <Project Path="src/Transfers/Transfers.Application/Transfers.Application.csproj" />
+  <Project Path="src/Transfers/Transfers.Infrastructure/Transfers.Infrastructure.csproj" />
+  <Project Path="src/Transfers/Transfers.Api/Transfers.Api.csproj" />
+  <Project Path="src/Accounts/Accounts.Domain/Accounts.Domain.csproj" />
+  <Project Path="src/Accounts/Accounts.Application/Accounts.Application.csproj" />
+  <Project Path="src/Accounts/Accounts.Infrastructure/Accounts.Infrastructure.csproj" />
+  <Project Path="src/Accounts/Accounts.Api/Accounts.Api.csproj" />
+  <Project Path="tests/UnitTests/BankFlow.UnitTests.csproj" />
+  <Project Path="tests/ArchitectureTests/BankFlow.ArchitectureTests.csproj" />
+</Solution>

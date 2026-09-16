@@ -1,0 +1,23 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+.env
+TestResults/
+coverage/
+artifacts/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+docker-data/
+
+# Frontend
+**/node_modules/
+**/.next/
+**/out/
+**/*.tsbuildinfo
+**/.env.local
+**/.env.*.local
+npm-debug.log*

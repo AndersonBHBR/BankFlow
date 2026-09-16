@@ -1,0 +1,221 @@
+name: bankflow
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/BankFlow.Gateway/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: bankflow.identity
+      Jwt__Audience: bankflow.apis
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Execute scripts/bootstrap.ps1 primeiro}
+      ReverseProxy__Clusters__identity__Destinations__primary__Address: http://identity:8080
+      ReverseProxy__Clusters__transfers__Destinations__primary__Address: http://transfers:8080
+      ReverseProxy__Clusters__accounts__Destinations__primary__Address: http://accounts:8080
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=local,service.namespace=bankflow
+    ports:
+      - "8080:8080"
+    depends_on:
+      - identity
+      - transfers
+      - accounts
+      - aspire-dashboard
+    networks:
+      - bankflow
+
+  identity:
+    build:
+      context: .
+      dockerfile: src/Identity/BankFlow.Identity.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: bankflow.identity
+      Jwt__Audience: bankflow.apis
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Execute scripts/bootstrap.ps1 primeiro}
+      Jwt__ExpirationMinutes: 30
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=local,service.namespace=bankflow
+    ports:
+      - "8081:8080"
+    networks:
+      - bankflow
+    depends_on:
+      - aspire-dashboard
+
+  transfers:
+    build:
+      context: .
+      dockerfile: src/Transfers/Transfers.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: bankflow.identity
+      Jwt__Audience: bankflow.apis
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Execute scripts/bootstrap.ps1 primeiro}
+      ConnectionStrings__TransfersDatabase: Server=transfers-db,1433;Database=BankFlowTransfers;User Id=sa;Password=${SQL_SA_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro};Encrypt=True;TrustServerCertificate=True
+      Services__AccountsBaseUrl: http://accounts:8080/
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:-bankflow}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=local,service.namespace=bankflow
+    ports:
+      - "8082:8080"
+    depends_on:
+      - transfers-db
+      - rabbitmq
+      - aspire-dashboard
+    restart: on-failure
+    networks:
+      - bankflow
+
+  accounts:
+    build:
+      context: .
+      dockerfile: src/Accounts/Accounts.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Issuer: bankflow.identity
+      Jwt__Audience: bankflow.apis
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Execute scripts/bootstrap.ps1 primeiro}
+      ConnectionStrings__AccountsDatabase: Server=accounts-db,1433;Database=BankFlowAccounts;User Id=sa;Password=${SQL_SA_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro};Encrypt=True;TrustServerCertificate=True
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_USER:-bankflow}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://aspire-dashboard:18889
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=local,service.namespace=bankflow
+    ports:
+      - "8083:8080"
+    depends_on:
+      - accounts-db
+      - rabbitmq
+      - aspire-dashboard
+    restart: on-failure
+    networks:
+      - bankflow
+
+  transfers-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro}
+    ports:
+      - "14331:1433"
+    volumes:
+      - transfers-db-data:/var/opt/mssql
+    networks:
+      - bankflow
+
+  accounts-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro}
+    ports:
+      - "14332:1433"
+    volumes:
+      - accounts-db-data:/var/opt/mssql
+    networks:
+      - bankflow
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-bankflow}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Execute scripts/bootstrap.ps1 primeiro}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - bankflow
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13
+    environment:
+      ASPNETCORE_URLS: http://+:18888
+      DOTNET_DASHBOARD_OTLP_ENDPOINT_URL: http://+:18889
+      DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL: http://+:18890
+      ASPIRE_DASHBOARD_TELEMETRY_OPTOUT: "true"
+    ports:
+      - "18888:18888"
+    restart: unless-stopped
+    networks:
+      - bankflow
+
+  admin:
+    build:
+      context: .
+      dockerfile: src/Web/bankflow-web/Dockerfile
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      BANKFLOW_GATEWAY_URL: http://gateway:8080
+      BANKFLOW_IDENTITY_URL: http://identity:8080
+      BANKFLOW_TRANSFERS_URL: http://transfers:8080
+      BANKFLOW_ACCOUNTS_URL: http://accounts:8080
+      BANKFLOW_COOKIE_SECURE: "false"
+      BANKFLOW_GATEWAY_PUBLIC_URL: http://localhost:8080
+      BANKFLOW_IDENTITY_PUBLIC_URL: http://localhost:8081
+      BANKFLOW_TRANSFERS_PUBLIC_URL: http://localhost:8082
+      BANKFLOW_ACCOUNTS_PUBLIC_URL: http://localhost:8083
+      ASPIRE_DASHBOARD_PUBLIC_URL: http://localhost:18888
+      RABBITMQ_MANAGEMENT_PUBLIC_URL: http://localhost:15672
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+      - identity
+      - transfers
+      - accounts
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/api/health/live').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - bankflow
+
+  load-test:
+    image: grafana/k6:2.2.0
+    profiles:
+      - load
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      IDENTITY_URL: http://identity:8080
+      TRANSFERS_URL: http://transfers:8080
+      ACCOUNTS_URL: http://accounts:8080
+    volumes:
+      - ./tests/load:/scripts:ro
+    command: run /scripts/bankflow-smoke.js
+    depends_on:
+      - gateway
+    networks:
+      - bankflow
+
+networks:
+  bankflow:
+    driver: bridge
+
+volumes:
+  transfers-db-data:
+  accounts-db-data:
+  rabbitmq-data:
