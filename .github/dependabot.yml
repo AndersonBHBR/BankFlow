@@ -11,6 +11,17 @@ updates:
           - "Microsoft.*"
 
   - package-ecosystem: docker
+    directories:
+      - /src/Accounts/Accounts.Api
+      - /src/Gateway/BankFlow.Gateway
+      - /src/Identity/BankFlow.Identity.Api
+      - /src/Transfers/Transfers.Api
+      - /src/Web/bankflow-web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker-compose
     directory: /
     schedule:
       interval: weekly
