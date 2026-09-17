@@ -104,7 +104,7 @@ services:
       - bankflow
 
   transfers-db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
@@ -117,7 +117,7 @@ services:
       - bankflow
 
   accounts-db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
